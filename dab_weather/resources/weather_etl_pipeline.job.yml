@@ -1,0 +1,38 @@
+resources:
+  jobs:
+    weather_etl_pipeline:
+      name: weather_etl_pipeline
+      schedule:
+        quartz_cron_expression: 59 0 9 * * ?
+        timezone_id: America/Buenos_Aires
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: 01_bronze
+          notebook_task:
+            notebook_path: ../notebooks/01_Bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+          environment_key: 01_bronze_environment
+        - task_key: 02_Silver
+          depends_on:
+            - task_key: 01_bronze
+          notebook_task:
+            notebook_path: ../notebooks/02_Silver.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+              env: ${bundle.target}
+        - task_key: 03_Gold
+          depends_on:
+            - task_key: 02_Silver
+          notebook_task:
+            notebook_path: ../notebooks/03_Gold.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+              env: ${bundle.target}
+      queue:
+        enabled: true
+      environments:
+        - environment_key: 01_bronze_environment
+          spec:
+            environment_version: "5"
+      performance_target: PERFORMANCE_OPTIMIZED

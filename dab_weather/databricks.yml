@@ -1,0 +1,48 @@
+# This is a Databricks asset bundle definition for dab_weather.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: dab_weather
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    default: "mbertuzzi_dev"
+  dev_flag:
+    default: true
+
+targets:
+  dev:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-56f60291-144c.cloud.databricks.com
+
+  test:
+    mode: production
+    variables:
+      catalog:
+        default: "mbertuzzi_test"
+      dev_flag:
+        default: false
+    presets:
+      name_prefix: '[testing] '
+    workspace:
+      host: https://dbc-56f60291-144c.cloud.databricks.com
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
+
+  prod:
+    mode: production
+    variables:
+      catalog:
+        default: "mbertuzzi_prd"
+      dev_flag:
+        default: false
+    workspace:
+      host: https://dbc-56f60291-144c.cloud.databricks.com
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
